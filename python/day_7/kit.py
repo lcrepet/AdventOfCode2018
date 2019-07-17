@@ -2,6 +2,10 @@ import collections
 import heapq
 
 class Manual:
+    """
+    Store a sleigh's instructions for assembly.
+    """
+
     def __init__(self):
         self.instructions = collections.defaultdict(list)
         self.first_steps = set()
@@ -9,6 +13,20 @@ class Manual:
 
 
     def add_instruction(self, step, following):
+        """
+        Add one instruction to the manual
+
+        An instruction describes in which order two steps should be run.
+        Each time an instruction is added, first_steps set is updated to keep
+        trace of all steps that can be run first (without another step run
+        before).
+
+        :param step: a given step of assembly
+        :param following: step that can be run after "step"
+        :rtype: None
+        """
+
+
         self.instructions[step].append(following)
 
         self.following_steps.add(following)
@@ -19,79 +37,98 @@ class Manual:
 
 
 class Assembly:
+    """
+    Allow to "assemble" a sleigh.
+    """
+
     def __init__(self, manual):
+        """
+        :param manual: sleigh's manual
+        :type manual: Manual
+        """
+
         self.manual = manual
 
 
-    def run_instructions(self, nb_workers = 1):
-        self.init_helpers_structures(nb_workers)
+    def run_instructions(self, nb_workers=1):
+        """
+        Run the manual's instructions with a given number of workers
 
-        while self.steps_heap or self.processed_steps:
-            self.nb_steps += 1
+        Print the number and the sequence of done steps
+
+        :param nb_workers: number of workers assembling the sleigh
+        :type nb_workers: int
+        :rtype: None
+        """
+
+        self.__init_helpers_structures(nb_workers)
+
+        while self.__steps_heap or self.__processed_steps:
+            self.__nb_steps += 1
 
             for worker in range(0, nb_workers):
-                self.work(worker)
+                self.__work(worker)
 
-            while self.steps_to_process:
-                heapq.heappush(self.steps_heap, self.steps_to_process.pop())
+            while self.__steps_to_process:
+                heapq.heappush(self.__steps_heap, self.__steps_to_process.pop())
 
-        print(self.nb_steps)
-        print(''.join(self.done_steps))
+        print(self.__nb_steps)
+        print(''.join(self.__done_steps))
 
 
-    def work(self, worker):
+    def __work(self, worker):
         steps_to_process = []
 
-        if not(self.workers_steps[worker]):
-            if self.steps_heap:
-                self.workers_steps[worker] = heapq.heappop(self.steps_heap)
+        if not(self.__workers_steps[worker]):
+            if self.__steps_heap:
+                self.__workers_steps[worker] = heapq.heappop(self.__steps_heap)
             else:
                 return
 
-        step = self.workers_steps[worker]
+        step = self.__workers_steps[worker]
 
-        if step in self.processed_steps:
-            self.processed_steps[step] -= 1
+        if step in self.__processed_steps:
+            self.__processed_steps[step] -= 1
         else:
-            self.processed_steps[step] = self.duration(step) - 1
+            self.__processed_steps[step] = self.__duration(step) - 1
 
-        if self.processed_steps[step] == 0:
-            del(self.processed_steps[step])
-            self.workers_steps[worker] = None
+        if self.__processed_steps[step] == 0:
+            del(self.__processed_steps[step])
+            self.__workers_steps[worker] = None
 
             for following in self.manual.instructions[step]:
-                self.steps_levels[following] -= 1
-                if self.steps_levels[following] == 0:
-                    self.steps_to_process.append(following)
+                self.__steps_levels[following] -= 1
+                if self.__steps_levels[following] == 0:
+                    self.__steps_to_process.append(following)
 
-            self.done_steps.append(step)
-
-
-    def init_helpers_structures(self, nb_workers):
-        self.init_steps_levels()
-        self.init_steps_heap()
-
-        self.processed_steps = {}
-        self.steps_to_process = []
-        self.done_steps = []
-        self.workers_steps = [None] * nb_workers
-        self.nb_steps = 0
+            self.__done_steps.append(step)
 
 
-    def init_steps_levels(self):
-        self.steps_levels = collections.defaultdict(int)
+    def __init_helpers_structures(self, nb_workers):
+        self.__init_steps_levels()
+        self.__init_steps_heap()
+
+        self.__processed_steps = {}
+        self.__steps_to_process = []
+        self.__done_steps = []
+        self.__workers_steps = [None] * nb_workers
+        self.__nb_steps = 0
+
+
+    def __init_steps_levels(self):
+        self.__steps_levels = collections.defaultdict(int)
 
         for step, followings in self.manual.instructions.items():
             for following in followings:
-                self.steps_levels[following] += 1
+                self.__steps_levels[following] += 1
 
 
-    def init_steps_heap(self):
-        self.steps_heap = list(self.manual.first_steps)
-        heapq.heapify(self.steps_heap)
+    def __init_steps_heap(self):
+        self.__steps_heap = list(self.manual.first_steps)
+        heapq.heapify(self.__steps_heap)
 
 
-    def duration(self, step):
+    def __duration(self, step):
         return ord(step) - 4
 
 

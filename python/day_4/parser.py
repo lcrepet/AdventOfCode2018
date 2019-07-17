@@ -8,6 +8,15 @@ GUARD_ASLEEP = 'falls asleep'
 GUARD_WAKES = 'wakes up'
 
 def parse_all(inputs):
+    """
+    Parse the list of unsorted written records  to generate the list of
+    guards.
+
+    :param inputs: list of written records
+    :type inputs: list(str)
+    :rtype: list(Guard)
+    """
+
     guards = {}
     records = create_records(inputs)
 
@@ -31,12 +40,29 @@ def parse_all(inputs):
 
 
 def create_records(inputs):
+    """
+    Create a list of records objects from a list of written records.
+    The records objects are sorted in chronological order.
+
+    :param inputs: list of written records
+    :type inputs: list(str)
+    :rtype: list(Record)
+    """
+
     records = filter(None, list(map(parse, inputs)))
     return sorted(records, key=lambda record: (record.date, record.hour, record.minute))
 
 
 
 def parse(input):
+    """
+    Parse one record to generate a record object.
+
+    :param input: written record
+    :type input: str
+    :rtype: Record
+    """
+
     if not(END_DATETIME_MARKER in input):
         return
 
@@ -58,6 +84,11 @@ def parse(input):
     return Record(date, hour, int(minute), int(guard_id), action)
 
 class Record:
+    """
+    Store record information. A record describe one guard status change at
+    a specific time.
+    """
+
     def __init__(self, date, hour, minute, guard_id, action):
         self.date = date
         self.hour = hour
@@ -66,11 +97,21 @@ class Record:
         self.action = action
 
 class Guard:
+    """
+    Track the sleep of one guard.
+    """
+
     def __init__(self, id):
         self.id = id
         self.nb_sleeps_by_minute = [0] * 60
         self.total_minutes_asleep = 0
 
     def most_slept_minute(self):
+        """
+        Compute the minute the guard slept the most.
+
+        :rtype: int
+        """
+
         return self.nb_sleeps_by_minute.index(max(self.nb_sleeps_by_minute))
 
