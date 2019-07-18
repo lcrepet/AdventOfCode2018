@@ -9,7 +9,11 @@ def compute_frequencies_history(frequencies):
     return history
 
 
-def find_duplicate_frequency_from(history):
+def find_frequency_duplicate(frequencies):
+    if not(frequencies):
+        return
+
+    history = compute_frequencies_history(frequencies)
     step = history.pop()
 
     if step == 0:
@@ -41,9 +45,9 @@ def select_best_potential_candidate(first_potential, second_potential, differenc
     quotient = int(abs(difference/step))
 
     if step > 0:
-        return (quotient, min(first_potential, second_potential, key=lambda index: frequencies_history[index]))
+        return (quotient, min(first_potential, second_potential, key=lambda index: history[index]))
     else:
-        return (quotient, max(first_potential, first_potential, key= lambda index: frequencies_history[index]))
+        return (quotient, max(first_potential, first_potential, key= lambda index: history[index]))
 
 
 def select_best_candidate(current_best, potential):
@@ -54,9 +58,8 @@ def select_best_candidate(current_best, potential):
 
 
 # MAIN SCRIPT
+
 with open('input.txt') as input:
     frequencies = map(int, input.read().split())
 
-frequencies_history = compute_frequencies_history(frequencies)
-
-print(find_duplicate_frequency_from(frequencies_history))
+print(find_frequency_duplicate(frequencies))
